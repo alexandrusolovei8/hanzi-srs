@@ -9,10 +9,12 @@ Legend per milestone: **Deliverable** · **Acceptance** (how it's tested) · **C
 
 ## M0 — Scaffold & deploy
 
-- [ ] Vite + React + TS (strict), ESLint, Prettier, Vitest, Tailwind
-- [ ] vite-plugin-pwa (manifest, icons, app-shell precache), `base: '/hanzi-srs/'`
-- [ ] GitHub Actions workflow → GitHub Pages
-- [ ] Pin dependency versions (`npm view`)
+- [x] Vite + React + TS (strict), ESLint, Prettier, Vitest, Tailwind
+- [x] vite-plugin-pwa (manifest, icons, app-shell precache), `base: '/hanzi-srs/'`
+- [x] GitHub Actions workflow → GitHub Pages
+- [x] Pin dependency versions (`npm view`)
+
+**Status:** done 2026-11-27 — deployed to https://alexandrusolovei8.github.io/hanzi-srs/, CI green, verified on iPhone online and in airplane mode.
 
 **Acceptance:** HTTPS URL opens on iPhone; "Add to Home Screen" launches standalone; shell loads in airplane mode; CI green.
 **Claude Code:** CLAUDE.md (refine after `/init`) + permissions in `.claude/settings.json` — the base context every session reads.
