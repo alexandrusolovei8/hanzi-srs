@@ -161,3 +161,6 @@ vite.config.ts.timestamp-*
 
 # vite-plugin-pwa dev service worker
 dev-dist
+
+# Personal import files (real class material) — never commit
+private/
