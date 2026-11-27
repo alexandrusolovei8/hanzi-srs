@@ -72,8 +72,9 @@ export type PinyinCheck = 'match' | 'no-tones' | 'mismatch';
  * `[['bú', 'shì'], ['bù', 'shì']]`). Never changes anything: the caller decides how to warn.
  *
  * - `no-tones`: same syllables as a reading, but no tone marks at all.
- * - `match`: same syllables and tones as some reading. A missing tone on a non-first syllable is
- *   accepted, because textbooks write the neutral tone there (`xièxie`, `péngyou`).
+ * - `match`: same syllables and tones as some reading. A syllable without tone matches only if
+ *   that reading marks it as neutral (so `xuéxi` for 学习 `xué xí` is a mismatch). Readings that
+ *   allow textbook neutral tones (`xiè xie`) must be supplied by the caller.
  * - `mismatch`: anything else (wrong syllable, missing syllable, wrong tone).
  */
 export function checkPinyin(
@@ -101,11 +102,8 @@ function matchesReading(received: ParsedPinyin, syllables: readonly string[]): b
   }
   if (letters !== received.letters) return false;
 
-  return expected.every((syl, i) => {
+  return expected.every((syl) => {
     const tones = received.tones.filter((t) => t.index >= syl.start && t.index < syl.end);
-    if (tones.length > 1) return false;
-    const tone = tones[0]?.tone;
-    if (tone === undefined) return syl.tone === undefined || i > 0;
-    return tone === syl.tone;
+    return tones.length <= 1 && tones[0]?.tone === syl.tone;
   });
 }

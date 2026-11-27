@@ -26,6 +26,14 @@ describe('pinyinProTool', () => {
     ]);
   });
 
+  it('adds a neutral second syllable for reduplicated characters only', () => {
+    expect(pinyinProTool.readings('谢谢')).toEqual([
+      ['xiè', 'xiè'],
+      ['xiè', 'xie'],
+    ]);
+    expect(pinyinProTool.readings('学习')).toEqual([['xué', 'xí']]);
+  });
+
   it('returns every reading of a single polyphonic character', () => {
     expect(pinyinProTool.readings('了')).toEqual(
       expect.arrayContaining([['le'], ['liǎo']]) as unknown,

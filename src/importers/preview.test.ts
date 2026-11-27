@@ -56,6 +56,13 @@ describe('buildPreview: pinyin quality', () => {
     }
   });
 
+  it('accepts a neutral tone only where the reference marks it', () => {
+    expect(warningsOf('妈妈')).toEqual([]);
+    expect(warningsOf('学习')).toEqual([{ kind: 'pinyin-mismatch', suggested: 'xué xí' }]);
+    const [xiexie] = buildPreview(parse('hanzi,pinyin\n谢谢,xièxie'), ctx()).rows;
+    expect(xiexie?.warnings).toEqual([]);
+  });
+
   it('never overwrites the pinyin from the file', () => {
     const row = rows.find((r) => r.entry.hanzi === '你好');
     expect(row?.candidate?.pinyin).toBe('xièxie');

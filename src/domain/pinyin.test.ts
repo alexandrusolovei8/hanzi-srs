@@ -71,8 +71,15 @@ describe('checkPinyin', () => {
     expect(checkPinyin('ni hǎo', nihao)).toBe('mismatch');
   });
 
-  it('accepts a neutral tone on a later syllable (textbook style)', () => {
-    expect(checkPinyin('xièxie', [['xiè', 'xiè']])).toBe('match');
+  it('accepts a toneless syllable only where the reading marks it neutral', () => {
+    expect(checkPinyin('xièxie', [['xiè', 'xie']])).toBe('match');
+    expect(checkPinyin('xièxie', [['xiè', 'xiè']])).toBe('mismatch');
+    expect(checkPinyin('xuéxi', [['xué', 'xí']])).toBe('mismatch');
+    expect(checkPinyin('māma', [['mā', 'ma']])).toBe('match');
+  });
+
+  it('rejects a tone where the reading marks the syllable neutral', () => {
+    expect(checkPinyin('wǒ mén', [['wǒ', 'men']])).toBe('mismatch');
   });
 
   it('reports pinyin of another word and an omitted syllable', () => {
