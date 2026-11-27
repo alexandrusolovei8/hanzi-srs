@@ -1,3 +1,5 @@
 * text=auto eol=lf
 *.png binary
 *.ico binary
+# CSV fixtures keep their exact bytes (CRLF line endings, BOM) to test the parser.
+src/importers/csv/__fixtures__/*.csv -text

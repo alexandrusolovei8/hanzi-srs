@@ -3,3 +3,4 @@ dev-dist
 coverage
 package-lock.json
 public
+src/importers/csv/__fixtures__
