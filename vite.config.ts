@@ -39,7 +39,8 @@ export default defineConfig({
       },
       workbox: {
         // App shell precache. Dictionary shards and stroke data will be runtime-cached later (M3/M5).
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+        // csv: import templates must download offline too.
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest,csv}'],
         cleanupOutdatedCaches: true,
       },
     }),
