@@ -155,3 +155,6 @@ vite.config.ts.timestamp-*
 .nx/cache
 .nx/workspace-data
 .nx/migrate-runs
+
+# Claude Code personal settings (team settings live in .claude/settings.json)
+.claude/settings.local.json
