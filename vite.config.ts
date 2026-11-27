@@ -1,11 +1,49 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { VitePWA } from 'vite-plugin-pwa';
+
+const THEME_COLOR = '#b91c1c';
 
 // GitHub Pages serves the app from https://<user>.github.io/hanzi-srs/
 export default defineConfig({
   base: '/hanzi-srs/',
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      injectRegister: 'script-defer',
+      includeAssets: ['favicon.ico', 'icon.svg', 'apple-touch-icon-180x180.png'],
+      manifest: {
+        name: 'Hanzi SRS',
+        short_name: 'Hanzi SRS',
+        description: 'Learn Mandarin hanzi and pinyin with spaced repetition and stroke practice.',
+        lang: 'en',
+        theme_color: THEME_COLOR,
+        background_color: '#ffffff',
+        display: 'standalone',
+        orientation: 'portrait',
+        // start_url and scope default to Vite's `base` (/hanzi-srs/).
+        icons: [
+          { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+          {
+            src: 'maskable-icon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
+      },
+      workbox: {
+        // App shell precache. Dictionary shards and stroke data will be runtime-cached later (M3/M5).
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+        cleanupOutdatedCaches: true,
+      },
+    }),
+  ],
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],

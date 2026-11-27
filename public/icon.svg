@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#b91c1c"/>
+  <!-- Stylized 人 (rén) drawn with paths so rendering does not depend on CJK fonts. -->
+  <g fill="none" stroke="#ffffff" stroke-width="44" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M262 112 C258 230 210 330 120 404"/>
+    <path d="M268 236 C306 312 352 362 404 396"/>
+  </g>
+</svg>
