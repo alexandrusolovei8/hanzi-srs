@@ -34,5 +34,34 @@
       "PowerShell(gh api * -X *)"
     ],
     "deny": ["Read(./.env)", "Read(./.env.*)"]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/format-edited-file.mjs"],
+            "timeout": 90,
+            "statusMessage": "Prettier + ESLint on edited file"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/verify-on-stop.mjs"],
+            "timeout": 240,
+            "statusMessage": "tsc + related tests"
+          }
+        ]
+      }
+    ]
   }
 }

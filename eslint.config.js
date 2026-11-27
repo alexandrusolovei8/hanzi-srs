@@ -28,6 +28,12 @@ export default defineConfig([
       '@typescript-eslint/no-explicit-any': 'error',
     },
   },
+  {
+    // Claude Code hook scripts: plain Node ESM.
+    files: ['.claude/hooks/**/*.mjs'],
+    extends: [js.configs.recommended],
+    languageOptions: { globals: globals.node },
+  },
   // Must stay last: turns off stylistic rules that conflict with Prettier.
   prettier,
 ]);
