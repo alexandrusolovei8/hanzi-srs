@@ -37,15 +37,28 @@ All entities carry `id` (UUID), `createdAt`, `updatedAt` (epoch ms) and optional
 ```ts
 Deck      { id, name, createdAt, updatedAt, deletedAt? }
 Word      { id, deckId, hanzi, pinyin, meaning, meaningSource: 'user' | 'cedict',
-            tags: string[], createdAt, updatedAt, deletedAt? }        // unique [deckId+hanzi]
+            tags: string[], createdAt, updatedAt, deletedAt? }
+            // [deckId+hanzi] unique among non-deleted words, enforced by the repository
+            // (not a unique DB index): re-adding a soft-deleted word restores it, keeping its id.
 Character { hanzi /*PK*/, pinyin: string[], inStrokeData: boolean }   // derived from Words
 Card      { id, wordId, kind: 'recognition' | 'production',
-            due, stability, difficulty, elapsedDays, scheduledDays,
-            reps, lapses, state, lastReview?, createdAt, updatedAt, deletedAt? }
-ReviewLog { id, cardId, rating, reviewedAt, durationMs, fsrs: {...snapshot} } // append-only
+            dueAt, lastReviewAt?, stability, stabilityFast, difficulty,
+            scheduledDays, learningStep, reps, lapses, state,
+            createdAt, updatedAt, deletedAt? }
+ReviewLog { id, cardId, rating, reviewedAt, durationMs,
+            fsrs: { state, dueAt, lastReviewAt?, stability, stabilityFast, difficulty,
+                    scheduledDays, learningStep },   // pre-review snapshot (enables undo)
+            createdAt, updatedAt }                   // append-only: never updated or deleted
 ```
 
 Each new Word creates one `recognition` and one `production` card.
+
+**FSRS alignment** (checked against `ts-fsrs` 6.0.1 type definitions, 2026-11-27): field names follow ts-fsrs v6
+(`dueAt`, `lastReviewAt`, `scheduledDays`, `learningStep`, `stabilityFast`); model is **FSRS-7**
+(`DefaultScheduler` default). v5's `elapsed_days` no longer exists — derive it from timestamps.
+`state`: New 0 · Learning 1 · Review 2 · Relearning 3. `rating` is a Grade: Again 1 · Hard 2 · Good 3 · Easy 4
+(ts-fsrs `Manual` 0 is not used). Dates are stored as epoch ms; the M4 adapter converts to/from `Date`.
+`scheduleStatus` is not stored (derived from `state`).
 
 ### Importer contract
 
@@ -62,6 +75,10 @@ Pipeline: `parse → enrich → preview → commitImport` (dedupe + card creatio
 ### Backup format
 
 `{ schemaVersion, exportedAt, decks, words, cards, reviewLogs }`. Import validates the schema version and runs migrations before writing.
+
+- **Import replaces all local data** in a single transaction (all-or-nothing: on any failure the previous data stays intact). The UI must confirm before importing.
+- **Merge** (combining a backup with existing data by `id`/`updatedAt`) is deferred until cross-device sync exists.
+- `Character` rows are not exported; they are derived from Words and rebuilt after import.
 
 ## 6. Dictionary
 
