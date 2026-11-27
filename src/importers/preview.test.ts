@@ -5,7 +5,13 @@ import { csvImporter } from './csv/csvImporter.ts';
 import pinyinErrors from './csv/__fixtures__/pinyin-errors.csv?raw';
 import rowProblems from './csv/__fixtures__/row-problems.csv?raw';
 import { pinyinProTool } from './enrich/pinyinTool.ts';
-import { buildPreview, candidatesToCommit, type PreviewContext } from './preview.ts';
+import {
+  buildPreview,
+  candidatesToCommit,
+  pinyinSuggestion,
+  withPinyin,
+  type PreviewContext,
+} from './preview.ts';
 import type { RawEntry } from './types.ts';
 
 function parse(text: string): RawEntry[] {
@@ -177,5 +183,22 @@ describe('candidatesToCommit', () => {
       '谢谢',
       '学生',
     ]);
+  });
+});
+
+describe('use suggestion', () => {
+  it('replaces the pinyin of one row so its warning disappears', () => {
+    const entries = parse('hanzi,pinyin\n你好,xièxie\n谢谢,xie xie\n朋友,péng yǒu');
+    const preview = buildPreview(entries, ctx());
+    const [first, second, third] = preview.rows;
+    expect(first && pinyinSuggestion(first)).toBe('nǐ hǎo');
+    expect(second && pinyinSuggestion(second)).toBe('xiè xiè');
+    expect(third && pinyinSuggestion(third)).toBeUndefined();
+
+    const fixed = withPinyin(entries, 2, 'nǐ hǎo');
+    expect(fixed[1]).toEqual(entries[1]);
+    const rebuilt = buildPreview(fixed, ctx()).rows[0];
+    expect(rebuilt?.warnings).toEqual([]);
+    expect(rebuilt?.candidate?.pinyin).toBe('nǐ hǎo');
   });
 });

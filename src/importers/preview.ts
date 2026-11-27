@@ -177,3 +177,21 @@ export function candidatesToCommit(
     return wanted && row.candidate ? [row.candidate] : [];
   });
 }
+
+/** The pinyin suggested for a row with a pinyin warning, if any. */
+export function pinyinSuggestion(row: PreviewRow): string | undefined {
+  for (const warning of row.warnings) {
+    if (warning.kind === 'pinyin-mismatch' || warning.kind === 'pinyin-no-tones') {
+      return warning.suggested;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Returns the entries with the pinyin of the row at `line` replaced: an explicit user choice,
+ * after which the preview is rebuilt (the row's warning disappears).
+ */
+export function withPinyin(entries: readonly RawEntry[], line: number, pinyin: string): RawEntry[] {
+  return entries.map((entry) => (entry.line === line ? { ...entry, pinyin } : entry));
+}

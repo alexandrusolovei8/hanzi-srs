@@ -1,4 +1,5 @@
 import { CSV_COLUMNS, TAG_SEPARATOR } from './csv/csvImporter.ts';
+import type { PreviewRow, RowError, RowStatus, RowWarning } from './preview.ts';
 import type { ImportError } from './types.ts';
 
 const COLUMN_LIST = CSV_COLUMNS.join(', ');
@@ -41,3 +42,51 @@ export function describeImportError(error: ImportError): string {
 
 /** Short format reminder shown next to the file picker. */
 export const FORMAT_HINT = `UTF-8 CSV with a header row: ${COLUMN_LIST} (only hanzi is required). Separate several tags with "${TAG_SEPARATOR}".`;
+
+/** Text labels for row statuses: status is never conveyed by color alone. */
+export const STATUS_LABEL: Readonly<Record<RowStatus, string>> = {
+  new: 'New',
+  restore: 'Restore',
+  duplicate: 'Duplicate',
+  changed: 'Changed',
+  error: 'Error',
+};
+
+export function describeRowError(error: RowError): string {
+  switch (error.kind) {
+    case 'missing-hanzi':
+      return 'The hanzi cell is empty.';
+    case 'no-han':
+      return `"${error.hanzi}" contains no Chinese characters.`;
+    case 'extra-cells':
+      return `${String(error.count)} extra cell(s) beyond the header. Check separators and quotes.`;
+  }
+}
+
+export function describeRowWarning(warning: RowWarning): string {
+  switch (warning.kind) {
+    case 'pinyin-mismatch':
+      return `Pinyin differs from the suggestion "${warning.suggested}". Kept as written.`;
+    case 'pinyin-no-tones':
+      return `Pinyin has no tone marks. Suggestion: "${warning.suggested}".`;
+    case 'non-han':
+      return `Contains non-Chinese characters: ${warning.chars.join(' ')}`;
+  }
+}
+
+/** Explains why a row is skipped or what it will do (empty for plain new rows). */
+export function describeRowStatus(row: PreviewRow): string {
+  switch (row.status) {
+    case 'restore':
+      return 'Restores a word you deleted from this deck.';
+    case 'duplicate':
+      return row.duplicateOfLine !== undefined
+        ? `Same hanzi as line ${String(row.duplicateOfLine)}; skipped.`
+        : 'Already in this deck with the same data; skipped.';
+    case 'changed':
+      return `Already in this deck; differs in ${(row.changedFields ?? []).join(', ')}.`;
+    case 'new':
+    case 'error':
+      return '';
+  }
+}

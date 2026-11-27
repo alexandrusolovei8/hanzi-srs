@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { describeImportError, FORMAT_HINT } from './messages.ts';
+import {
+  describeImportError,
+  describeRowError,
+  describeRowStatus,
+  describeRowWarning,
+  FORMAT_HINT,
+  STATUS_LABEL,
+} from './messages.ts';
 import type { ImportError } from './types.ts';
 
 describe('describeImportError', () => {
@@ -25,5 +32,49 @@ describe('describeImportError', () => {
 
   it('documents the tag separator in the format hint', () => {
     expect(FORMAT_HINT).toContain('"|"');
+  });
+});
+
+describe('row messages', () => {
+  const base = {
+    entry: { line: 2, hanzi: '你' },
+    errors: [],
+    warnings: [],
+    pinyinGenerated: false,
+  };
+
+  it('labels every status with text', () => {
+    expect(Object.values(STATUS_LABEL)).toEqual([
+      'New',
+      'Restore',
+      'Duplicate',
+      'Changed',
+      'Error',
+    ]);
+  });
+
+  it('describes row errors', () => {
+    expect(describeRowError({ kind: 'missing-hanzi' })).toContain('empty');
+    expect(describeRowError({ kind: 'no-han', hanzi: 'abc' })).toContain('"abc"');
+    expect(describeRowError({ kind: 'extra-cells', count: 2 })).toContain('2 extra');
+  });
+
+  it('describes row warnings', () => {
+    expect(describeRowWarning({ kind: 'pinyin-mismatch', suggested: 'nǐ' })).toContain('"nǐ"');
+    expect(describeRowWarning({ kind: 'pinyin-no-tones', suggested: 'nǐ' })).toContain('no tone');
+    expect(describeRowWarning({ kind: 'non-han', chars: ['!', 'a'] })).toContain('! a');
+  });
+
+  it('explains each status', () => {
+    expect(describeRowStatus({ ...base, status: 'new' })).toBe('');
+    expect(describeRowStatus({ ...base, status: 'error' })).toBe('');
+    expect(describeRowStatus({ ...base, status: 'restore' })).toContain('deleted');
+    expect(describeRowStatus({ ...base, status: 'duplicate', duplicateOfLine: 1 })).toContain(
+      'line 1',
+    );
+    expect(describeRowStatus({ ...base, status: 'duplicate' })).toContain('Already');
+    expect(
+      describeRowStatus({ ...base, status: 'changed', changedFields: ['meaning', 'tags'] }),
+    ).toContain('meaning, tags');
   });
 });
