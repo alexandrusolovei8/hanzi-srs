@@ -3,6 +3,7 @@ import type { Clock } from '../../domain/clock.ts';
 import { err, ok, type Result } from '../../domain/result.ts';
 import type { HanziDb } from '../database.ts';
 import { BACKUP_SCHEMA_VERSION, type Backup, type BackupError } from './format.ts';
+import { migrateBackup } from './migrations.ts';
 import { validateBackup } from './validate.ts';
 
 const byId = (a: { id: string }, b: { id: string }) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
@@ -40,19 +41,17 @@ export interface ImportSummary {
 
 /**
  * Replaces ALL local data with the backup (SPEC §5: merge is deferred until sync exists).
- * Validation happens before any write; the write is a single transaction, so on any failure
+ * Old backups are migrated to the current format, then validated, before any write; the write is a single transaction, so on any failure
  * IndexedDB rolls back and the previous data stays intact.
  */
 export async function importBackup(
   db: HanziDb,
   raw: unknown,
 ): Promise<Result<ImportSummary, BackupError>> {
-  const version = (raw as { schemaVersion?: unknown } | null)?.schemaVersion;
-  if (version !== BACKUP_SCHEMA_VERSION) {
-    return err({ kind: 'unsupported-version', found: version, supported: BACKUP_SCHEMA_VERSION });
-  }
+  const migrated = migrateBackup(raw);
+  if (!migrated.ok) return migrated;
 
-  const validated = validateBackup(raw);
+  const validated = validateBackup(migrated.value);
   if (!validated.ok) return err({ kind: 'invalid', issues: validated.error });
   const backup = validated.value;
 
