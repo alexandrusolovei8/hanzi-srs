@@ -14,12 +14,22 @@ Offline-first PWA for learning Mandarin (hanzi + pinyin) with FSRS spaced repeti
 
 - `npm run dev` — Vite dev server
 - `npm run build` — type-check + production build (`dist/`)
-- `npm run preview` — serve the production build (test PWA/offline here, not in dev)
-- `npm test` — Vitest (unit + component)
+- `npm run preview` — serve the production build at `http://localhost:4173/hanzi-srs/` (test PWA/offline here, not in dev)
+- `npm run typecheck` — `tsc -b` only
+- `npm test` — Vitest (unit + component); `npm run test:watch` for watch mode
 - `npx vitest related <files>` — tests affected by given files
-- `npm run e2e` — Playwright (WebKit, iPhone viewport)
-- `npm run lint` / `npm run format`
-- `npm run build:cedict` — regenerate dictionary shards (M3)
+- `npm run lint` (zero warnings) / `npm run format` / `npm run format:check`
+- `npm run generate-pwa-assets` — regenerate icons in `public/` from `public/icon.svg` (commit the output)
+- `npm run e2e` — Playwright (WebKit, iPhone viewport) — _not yet added (M4/M5)_
+- `npm run build:cedict` — regenerate dictionary shards — _not yet added (M3)_
+
+CI (`.github/workflows/ci.yml`) runs `npm ci` → lint → format:check → test → build, then deploys `dist/` on push to `main`. Run the same sequence locally before committing.
+
+## Dependencies
+
+- Exact versions only (`.npmrc` has `save-exact` + `engine-strict`). Resolve versions with `npm view`, check `peerDependencies`/`engines` before bumping.
+- Known pins: `typescript` 6.0.x (typescript-eslint requires `<6.1`); `jsdom` 29.x (30+ needs Node ≥24.15).
+- GitHub Actions are pinned to commit SHAs with the tag in a comment.
 
 ## Architecture
 
