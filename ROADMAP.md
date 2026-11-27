@@ -8,6 +8,7 @@ Legend per milestone: **Deliverable** · **Acceptance** (how it's tested) · **C
 ---
 
 ## M0 — Scaffold & deploy
+
 - [ ] Vite + React + TS (strict), ESLint, Prettier, Vitest, Tailwind
 - [ ] vite-plugin-pwa (manifest, icons, app-shell precache), `base: '/hanzi-srs/'`
 - [ ] GitHub Actions workflow → GitHub Pages
@@ -18,6 +19,7 @@ Legend per milestone: **Deliverable** · **Acceptance** (how it's tested) · **C
 **SE concept:** CI/CD and reproducible builds (lockfile, pinned versions, automated deploy).
 
 ## M1 — Domain & persistence
+
 - [ ] Domain types (Deck, Word, Character, Card, ReviewLog), injectable clock
 - [ ] Dexie schema v1 + repositories
 - [ ] Backup export/import with `schemaVersion` + migration framework
@@ -27,6 +29,7 @@ Legend per milestone: **Deliverable** · **Acceptance** (how it's tested) · **C
 **SE concept:** Layered architecture & Repository pattern; versioned schema migrations.
 
 ## M2 — Importers
+
 - [ ] `Importer` interface + registry
 - [ ] CSV importer, pasted-text importer (comma/tab/semicolon)
 - [ ] Pinyin enrichment with pinyin-pro; preview screen; dedupe; `commitImport` transaction
@@ -36,6 +39,7 @@ Legend per milestone: **Deliverable** · **Acceptance** (how it's tested) · **C
 **SE concept:** Input validation & parsing, Strategy/plugin pattern, `Result` types instead of exceptions.
 
 ## M4 — FSRS review
+
 - [ ] Card generation (recognition + production) on word creation
 - [ ] ts-fsrs wrapper in `domain/`; due queue
 - [ ] Review session UI (recognition), ratings, ReviewLog append
@@ -45,6 +49,7 @@ Legend per milestone: **Deliverable** · **Acceptance** (how it's tested) · **C
 **SE concept:** Functional core / imperative shell; deterministic tests via dependency injection (clock).
 
 ## M5 — Writing
+
 - [ ] Hanzi Writer adapter; self-hosted stroke data with SW runtime cache
 - [ ] Production cards (meaning → write hanzi) with mistake-based rating suggestion
 - [ ] Free practice mode per character
@@ -54,6 +59,7 @@ Legend per milestone: **Deliverable** · **Acceptance** (how it's tested) · **C
 **SE concept:** Adapter pattern for third-party libraries; offline-first caching strategies (precache vs runtime cache).
 
 ## M3 — Dictionary (CC-CEDICT)
+
 - [ ] `scripts/build-cedict.ts`: download → parse → bucketed JSON shards
 - [ ] `dictionary/` lazy lookup; meaning enrichment in import pipeline
 - [ ] About/attribution page; `public/data/LICENSES/`
@@ -64,7 +70,8 @@ Legend per milestone: **Deliverable** · **Acceptance** (how it's tested) · **C
 
 ---
 
-## M6 — Stats & persistence polish *(optional)*
+## M6 — Stats & persistence polish _(optional)_
+
 - [ ] Due today, reviewed today, streak (timezone-aware day boundary)
 - [ ] `navigator.storage.persist()`; backup reminder every N days; onboarding note on iOS storage
 
@@ -72,7 +79,8 @@ Legend per milestone: **Deliverable** · **Acceptance** (how it's tested) · **C
 **Claude Code:** Custom slash commands (`/release`, `/ios-check`) for repeatable checklists.
 **SE concept:** Time & timezone correctness; defensive design against platform data loss.
 
-## M7 — Automation *(optional)*
+## M7 — Automation _(optional)_
+
 - [ ] `anthropics/claude-code-action` for PR review
 - [ ] Headless `claude -p` step in CI
 - [ ] Scheduled workflow: check dependency updates & new CC-CEDICT release → open issue
@@ -85,4 +93,5 @@ Legend per milestone: **Deliverable** · **Acceptance** (how it's tested) · **C
 ---
 
 ## Later phases (post-MVP)
+
 TTS audio · tone drills · photo → words · cross-device sync (Dexie Cloud or small backend) · AI tutor agent · push notifications.
