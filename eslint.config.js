@@ -26,6 +26,8 @@ export default defineConfig([
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
+      // Allow `const { removed, ...rest } = obj` to omit a property immutably.
+      '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
     },
   },
   {
