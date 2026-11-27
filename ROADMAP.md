@@ -22,9 +22,11 @@ Legend per milestone: **Deliverable** · **Acceptance** (how it's tested) · **C
 
 ## M1 — Domain & persistence
 
-- [ ] Domain types (Deck, Word, Character, Card, ReviewLog), injectable clock
-- [ ] Dexie schema v1 + repositories
-- [ ] Backup export/import with `schemaVersion` + migration framework
+- [x] Domain types (Deck, Word, Character, Card, ReviewLog), injectable clock
+- [x] Dexie schema v1 + repositories
+- [x] Backup export/import with `schemaVersion` + migration framework
+
+**Status:** done 2026-11-27 — 105 tests, ~99% coverage on domain/db; round-trip, atomicity, restore and dummy v1→v2 (backup + IndexedDB) tests pass. Card/ReviewLog aligned with ts-fsrs 6.0.1 (FSRS-7).
 
 **Acceptance:** backup round-trip yields identical data; dummy v1→v2 migration test passes (fake-indexeddb).
 **Claude Code:** Hooks — PostToolUse (eslint/prettier on edited files), Stop (`tsc` + `vitest related`), so quality is enforced automatically from the core onwards.

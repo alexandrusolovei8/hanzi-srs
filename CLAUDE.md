@@ -17,13 +17,20 @@ Offline-first PWA for learning Mandarin (hanzi + pinyin) with FSRS spaced repeti
 - `npm run preview` — serve the production build at `http://localhost:4173/hanzi-srs/` (test PWA/offline here, not in dev)
 - `npm run typecheck` — `tsc -b` only
 - `npm test` — Vitest (unit + component); `npm run test:watch` for watch mode
+- `npm run test:coverage` — tests + coverage gate (≥80% lines/branches/functions/statements on `src/domain` and `src/db`)
 - `npx vitest related <files>` — tests affected by given files
 - `npm run lint` (zero warnings) / `npm run format` / `npm run format:check`
 - `npm run generate-pwa-assets` — regenerate icons in `public/` from `public/icon.svg` (commit the output)
 - `npm run e2e` — Playwright (WebKit, iPhone viewport) — _not yet added (M4/M5)_
 - `npm run build:cedict` — regenerate dictionary shards — _not yet added (M3)_
 
-CI (`.github/workflows/ci.yml`) runs `npm ci` → lint → format:check → test → build, then deploys `dist/` on push to `main`. Run the same sequence locally before committing.
+CI (`.github/workflows/ci.yml`) runs `npm ci` → lint → format:check → test:coverage → build, then deploys `dist/` on push to `main`. Run the same sequence locally before committing.
+
+## Claude Code hooks (`.claude/settings.json`, scripts in `.claude/hooks/`)
+
+- **PostToolUse (Edit|Write):** Prettier + `eslint --fix` on the edited file; remaining lint errors are reported back (exit 2) and must be fixed.
+- **Stop:** `tsc -b` + `vitest related` on uncommitted code (full suite if config changed). Blocks once on failure; on the automatic retry it only warns (`stop_hook_active`). Skips when nothing changed since the last green run.
+- Hooks are Node scripts run without a shell (Windows/Linux parity). Add imports before their first use in a file, or the per-edit lint will flag the intermediate state.
 
 ## Dependencies
 
@@ -41,8 +48,14 @@ importers/{csv,text} ──► importers/enrich (pinyin-pro + dictionary/) ─�
 Service worker: precache app shell; runtime-cache dictionary shards + Hanzi Writer stroke data
 ```
 
-- `src/domain/` — pure TypeScript: types, FSRS scheduling wrapper, card generation, stats. **No React, no Dexie, no `Date.now()`** — inject a clock.
-- `src/db/` — the only module that touches IndexedDB. Schema changes require a new Dexie version + migration + test.
+- `src/domain/` — pure TypeScript: types, FSRS scheduling wrapper, card generation, stats. **No React, no Dexie, no `Date.now()`** — inject a `Clock` / `IdGenerator` (`EntityDeps`). Test fakes in `domain/test-utils/` (`fakeDeps`, `makeCard`, `makeReviewLog`).
+- `src/platform/` — real implementations of domain ports (`systemClock`, `uuid`, `systemDeps`). The only place allowed to read the wall clock or generate UUIDs.
+- `src/db/` — the only module that touches IndexedDB.
+  - `schema.ts`: `DB_VERSIONS` is append-only — never edit a shipped version; add a new one (with `upgrade` if rows change) + a migration test.
+  - `repositories/`: return `Result<_, RepoError>`, hide soft-deleted rows, wrap multi-table writes in transactions. Word dedupe (deck + hanzi) lives here, restoring soft-deleted words.
+  - `backup/`: export / validate / migrate / import. Import replaces all data in one transaction. Changing the backup shape requires bumping `BACKUP_SCHEMA_VERSION` + a `BACKUP_MIGRATIONS` step + tests.
+  - Tests: `createTestDb()` gives an isolated fake IndexedDB per test; `setupRepos()` adds repositories + fake clock.
+- FSRS fields follow `ts-fsrs` 6.x / FSRS-7 names (see SPEC §5 "FSRS alignment"); dates stay epoch ms.
 - `src/importers/` — each importer is an independent module implementing `Importer` and registered in `importers/index.ts`.
 - `src/dictionary/` — lazy CC-CEDICT shard lookup.
 - `src/features/<name>/` — UI per feature (import, review, writing, stats, decks, settings).
