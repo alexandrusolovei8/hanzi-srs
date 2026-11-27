@@ -48,5 +48,18 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      // Coverage gate applies to the core layers only (SPEC §9: domain and db >= 80%).
+      include: ['src/domain/**/*.ts', 'src/db/**/*.ts'],
+      exclude: ['**/*.test.ts', '**/test-utils/**'],
+      reporter: ['text', 'html'],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 80,
+        statements: 80,
+      },
+    },
   },
 });
