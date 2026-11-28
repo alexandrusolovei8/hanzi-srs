@@ -39,7 +39,8 @@ export default defineConfig({
       },
       workbox: {
         // App shell precache. Dictionary shards and stroke data will be runtime-cached later (M3/M5).
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+        // csv: import templates must download offline too.
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest,csv}'],
         cleanupOutdatedCaches: true,
       },
     }),
@@ -50,8 +51,8 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
     coverage: {
       provider: 'v8',
-      // Coverage gate applies to the core layers only (SPEC §9: domain and db >= 80%).
-      include: ['src/domain/**/*.ts', 'src/db/**/*.ts'],
+      // Coverage gate applies to the core layers (SPEC §9: domain and db >= 80%) and importers (untrusted input).
+      include: ['src/domain/**/*.ts', 'src/db/**/*.ts', 'src/importers/**/*.ts'],
       exclude: ['**/*.test.ts', '**/test-utils/**'],
       reporter: ['text', 'html'],
       thresholds: {

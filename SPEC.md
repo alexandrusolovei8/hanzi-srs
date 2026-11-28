@@ -13,15 +13,15 @@
 
 ## 3. MVP scope
 
-| Feature          | Description                                                                                                                          |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Import           | CSV file or pasted text (`hanzi[,pinyin][,meaning]`, also tab/semicolon separated). Preview before commit, dedupe by deck + hanzi.   |
-| Enrichment       | Missing pinyin → `pinyin-pro`. Missing meaning → CC-CEDICT lookup (English). User can edit any field; `meaningSource` tracks origin. |
-| Review (FSRS)    | `ts-fsrs` scheduling. Ratings Again/Hard/Good/Easy. Every review appends a `ReviewLog`.                                              |
-| Card kinds       | `recognition`: hanzi → meaning + pinyin. `production`: meaning → write hanzi (Hanzi Writer quiz; stroke mistakes suggest a rating).  |
-| Writing practice | Free stroke-order practice per character, outside the schedule.                                                                      |
-| Backup           | Export/import full JSON backup with `schemaVersion`. Periodic reminder.                                                              |
-| Stats            | Due today, reviewed today, streak (days).                                                                                            |
+| Feature          | Description                                                                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Import           | UTF-8 CSV file with header `hanzi,pinyin,meaning,tags` (comma/semicolon/tab auto-detected). Preview before commit, dedupe by deck + hanzi. |
+| Enrichment       | Missing pinyin → `pinyin-pro`. Missing meaning → CC-CEDICT lookup (English). User can edit any field; `meaningSource` tracks origin.       |
+| Review (FSRS)    | `ts-fsrs` scheduling. Ratings Again/Hard/Good/Easy. Every review appends a `ReviewLog`.                                                    |
+| Card kinds       | `recognition`: hanzi → meaning + pinyin. `production`: meaning → write hanzi (Hanzi Writer quiz; stroke mistakes suggest a rating).        |
+| Writing practice | Free stroke-order practice per character, outside the schedule.                                                                            |
+| Backup           | Export/import full JSON backup with `schemaVersion`. Periodic reminder.                                                                    |
+| Stats            | Due today, reviewed today, streak (days).                                                                                                  |
 
 Out of scope (later phases): TTS audio, tone drills, photo → words, cross-device sync, AI tutor agent, push notifications.
 
@@ -64,13 +64,26 @@ Each new Word creates one `recognition` and one `production` card.
 
 ```ts
 interface Importer {
-  id: string;                                   // 'csv' | 'text' | ...
-  parse(input: string): Result<RawEntry[], ImportError[]>;
+  id: string;                                   // 'csv' (only importer in the MVP)
+  parse(input: string): Result<RawEntry[], ImportError[]>;   // ImportError = file-level problem
 }
-RawEntry = { hanzi: string; pinyin?: string; meaning?: string; tags?: string[] }
+RawEntry = { line: number; hanzi: string; pinyin?: string; meaning?: string; tags?: string[];
+             extraCells?: number }   // line = source line, for the preview; extraCells = row error
 ```
 
-Pipeline: `parse → enrich → preview → commitImport` (dedupe + card creation, one transaction).
+File format: see `docs/import-format.md`. Bytes are decoded as strict UTF-8 (`TextDecoder` `fatal: true`);
+invalid UTF-8 rejects the whole file. Limits: 2 MB, 5000 rows. Tags inside a cell are separated by `|`.
+
+Preview row status: `new` · `restore` (soft-deleted word comes back, same id) · `duplicate` (same data, or
+repeated in the file: first row wins) · `changed` (saved word, file brings different pinyin/meaning/tags:
+skipped unless the user ticks "update changed") · `error`. Warnings (pinyin differs from pinyin-pro, no tone
+marks, non-Chinese characters) never block a row and never rewrite data. Only fields present in the file can
+update a saved word. `commitImport` writes everything in one transaction and re-checks the database.
+
+**Future improvement:** persist `pinyinSource: 'user' | 'generated'` on `Word` (needs IndexedDB v2 +
+backup v2 migration). In M2 the "generated" mark exists only in the import preview.
+
+Pipeline: `parse → enrich → preview → commitImport` (dedupe, one transaction). Card creation for imported words arrives with M4.
 
 ### Backup format
 

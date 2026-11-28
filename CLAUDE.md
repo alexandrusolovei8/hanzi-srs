@@ -44,7 +44,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci` → lint → format:check → test
 features/* (React UI)  ──useLiveQuery──►  db/ (Dexie repositories, migrations, backup)
         │                                     ▲
         └──────────► domain/ (pure TS) ◄──────┘
-importers/{csv,text} ──► importers/enrich (pinyin-pro + dictionary/) ──► db.commitImport
+importers/csv ──► importers/preview (+ enrich/pinyin-pro) ──► db repos.imports.commit
 Service worker: precache app shell; runtime-cache dictionary shards + Hanzi Writer stroke data
 ```
 
@@ -56,9 +56,9 @@ Service worker: precache app shell; runtime-cache dictionary shards + Hanzi Writ
   - `backup/`: export / validate / migrate / import. Import replaces all data in one transaction. Changing the backup shape requires bumping `BACKUP_SCHEMA_VERSION` + a `BACKUP_MIGRATIONS` step + tests.
   - Tests: `createTestDb()` gives an isolated fake IndexedDB per test; `setupRepos()` adds repositories + fake clock.
 - FSRS fields follow `ts-fsrs` 6.x / FSRS-7 names (see SPEC §5 "FSRS alignment"); dates stay epoch ms.
-- `src/importers/` — each importer is an independent module implementing `Importer` and registered in `importers/index.ts`.
+- `src/importers/` — each importer is an independent module implementing `Importer` and registered in `importers/index.ts` (only `csv` for now). Input is untrusted: strict UTF-8 (`decode.ts`), size/row limits, `Result` errors with user-facing text in `messages.ts`. `preview.ts` is pure; pinyin-pro sits behind the `PinyinTool` port. Format: `docs/import-format.md`; templates in `public/templates/` (tested by `templates.test.ts`). CSV fixtures in `__fixtures__/` keep exact bytes (`-text` in `.gitattributes`, Prettier-ignored).
 - `src/dictionary/` — lazy CC-CEDICT shard lookup.
-- `src/features/<name>/` — UI per feature (import, review, writing, stats, decks, settings).
+- `src/features/<name>/` — UI per feature (import, review, writing, stats, decks, settings). Screens take repositories as props (tests pass `setupRepos().repos`); `src/services.ts` is the composition root with the real ones. Heavy features are `React.lazy` chunks (import → pinyin-pro).
 - `src/ui/` — shared presentational components.
 
 ## Conventions

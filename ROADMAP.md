@@ -34,12 +34,18 @@ Legend per milestone: **Deliverable** · **Acceptance** (how it's tested) · **C
 
 ## M2 — Importers
 
-- [ ] `Importer` interface + registry
-- [ ] CSV importer, pasted-text importer (comma/tab/semicolon)
-- [ ] Pinyin enrichment with pinyin-pro; preview screen; dedupe; `commitImport` transaction
+- [x] `Importer` interface + registry (Strategy pattern; one importer: CSV)
+- [x] CSV importer: own RFC 4180 parser, comma/semicolon/tab detection, BOM, strict UTF-8, size/row limits
+- [x] Pinyin check & generation with pinyin-pro; two-step preview screen; dedupe; `commitImport` transaction
+- [x] `docs/import-format.md` + downloadable templates (comma and semicolon, with BOM)
 
-**Acceptance:** valid & malformed CSV fixtures; pasting `你好` yields `nǐ hǎo`; re-import creates no duplicates.
-**Claude Code:** Skill `add-importer` (scaffold module + tests + registration) — a pattern repeated for every new source.
+**Status:** done 2026-11-27 — not deployed yet (branch `feat/m2-csv-import`, unpushed). 236 tests, ~99.7% coverage on domain/db/importers.
+Importer chunk is lazy-loaded: 300.7 KB min / 144.5 KB gzip, of which pinyin-pro is 285.2 KB / 138.4 KB; it is in the SW precache (checked in `dist/sw.js`).
+Scope cut on purpose: no pasted-text importer, no .xlsx, no column mapping, no GBK. `pinyinSource` persistence deferred (SPEC §5).
+Pending: manual check on iPhone (Files picker, offline import in the installed app).
+
+**Acceptance:** valid & malformed CSV fixtures (BOM, semicolon, tab, unclosed quote, pinyin errors; invalid UTF-8 built in tests); `你好` without pinyin yields `nǐ hǎo`; re-import creates no duplicates.
+**Claude Code:** Skill — `add-importer` deferred (not worth it with one importer). Candidate: `vet-dependency`, drafted after M2 once its format is checked against the official docs.
 **SE concept:** Input validation & parsing, Strategy/plugin pattern, `Result` types instead of exceptions.
 
 ## M4 — FSRS review
